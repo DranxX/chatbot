@@ -2,18 +2,29 @@ from google import genai
 from google.genai import types
 import json
 
-def handler(request, response):
-    data = request.json or {}
+def handler(request):
+
+    body = request.get_data()
+    data = {}
+
+    try:
+        data = json.loads(body)
+    except:
+        data = {}
+
     prompt = data.get("prompt", "")
 
-    client = genai.Client()
+    client = genai.Client(api_key = None)
 
     chat = client.chats.create(
         model="gemini-3-flash-preview",
         config=types.GenerateContentConfig(
-            system_instruction="Kamu adalah pemandu di dunia Roblox … gaya tetua gunung"
+            system_instruction="Kamu adalah pemandu didunia roblox dengan nama tetua legendaris dan dunia gunung apung dengan tema fantasy. berikan response yang singkat, padat, jelas dan gaya bahasa tetua gunung"
         )
     )
 
-    ans = chat.send_message(message=prompt)
-    response.send(json.dumps({"reply": ans.text}))
+    response = chat.send_message(message = prompt)
+
+    return json.dumps({
+        "reply": response.text
+    })
