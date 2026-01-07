@@ -1,21 +1,15 @@
+from flask import Flask, request, jsonify
 from google import genai
 from google.genai import types
-import json
 
-def handler(request):
+app = Flask(__name__)
 
-    body = request.get_data()
-    data = {}
-
-    try:
-        data = json.loads(body)
-    except:
-        data = {}
-
+@app.route("/", methods=["POST"])
+def main():
+    data = request.get_json() or {}
     prompt = data.get("prompt", "")
 
-    client = genai.Client(api_key = None)
-
+    client = genai.Client()
     chat = client.chats.create(
         model="gemini-3-flash-preview",
         config=types.GenerateContentConfig(
@@ -23,8 +17,5 @@ def handler(request):
         )
     )
 
-    response = chat.send_message(message = prompt)
-
-    return json.dumps({
-        "reply": response.text
-    })
+    answer = chat.send_message(message=prompt)
+    return jsonify({"reply": answer.text})
